@@ -2,7 +2,7 @@ import java.util.Random;
 import java.util.Scanner;
 
 public class Main {
-   
+
     private static final int WALL = 1;
     private static final int PATH = 0;
     private static final int VISITED = 2; // Used to mark solution path
@@ -16,24 +16,68 @@ public class Main {
         System.out.print("Enter maze cols (min 5): ");
         int cols = scanner.nextInt();
 
-        
+
         if (rows < 5) rows = 11;
         if (cols < 5) cols = 11;
 
-       
+
         int[][] maze = generateMaze(rows, cols);
 
-        // Ask user to enter custom start and end points
-        System.out.print("Enter start row (default 1): ");
-        int startRow = scanner.nextInt();
-        System.out.print("Enter start col (default 0): ");
-        int startCol = scanner.nextInt();
-        System.out.print("Enter exit row (default " + (rows - 2) + "): ");
-        int endRow = scanner.nextInt();
-        System.out.print("Enter exit col (default " + (cols - 1) + "): ");
-        int endCol = scanner.nextInt();
+//        // Ask user to enter custom start and end points
+//        System.out.print("Enter start row (default 1): ");
+//        int startRow = scanner.nextInt();
+//        System.out.print("Enter start col (default 0): ");
+//        int startCol  = scanner.nextInt();
+//
+//        if (startRow < 0 || startRow >= rows || startCol < 0 || startCol >= cols) {
+//            System.out.println("Invalid start position. It must be within maze size (0 to " + (rows - 1) + " and 0 to " + (cols - 1) + ").");
+//            return;
+//        }
+//
+//        System.out.print("Enter exit row (default " + (rows - 2) + "): ");
+//        int endRow = scanner.nextInt();
+//        System.out.print("Enter exit col (default " + (cols - 1) + "): ");
+//        int endCol  = scanner.nextInt();
+//
+//        if (endRow < 0 || endRow >= rows || endCol < 0 || endCol >= cols) {
+//            System.out.println("Invalid exit position. It must be within maze size (0 to " + (rows - 1) + " and 0 to " + (cols - 1) + ").");
+//            return;
+//        }
 
-        // Validate points or fall back to default
+
+        // Get valid start position
+        int startRow ;
+        int startCol ;
+        while (true) {
+            System.out.print("Enter start row (default 1): ");
+            startRow = scanner.nextInt();
+            System.out.print("Enter start col (default 0): ");
+            startCol = scanner.nextInt();
+
+            if (startRow >= 0 && startRow < rows && startCol >= 0 && startCol < cols) {
+                break;
+            } else {
+                System.out.println("Invalid start position. Please enter values between 0 and " + (rows - 1) + " for rows, and 0 and " + (cols - 1) + " for columns.");
+            }
+        }
+
+// Get valid exit position
+        int endRow ;
+        int endCol;
+        while (true) {
+            System.out.print("Enter exit row (default " + (rows - 2) + "): ");
+            endRow = scanner.nextInt();
+            System.out.print("Enter exit col (default " + (cols - 1) + "): ");
+            endCol = scanner.nextInt();
+
+            if (endRow >= 0 && endRow < rows && endCol >= 0 && endCol < cols) {
+                break;
+            } else {
+                System.out.println("Invalid exit position. Please enter values between 0 and " + (rows - 1) + " for rows, and 0 and " + (cols - 1) + " for columns.");
+            }
+        }
+
+// Validate points or use fallback
         if (!isValidEntry(startRow, startCol, maze)) {
             startRow = 1;
             startCol = 0;
@@ -46,11 +90,11 @@ public class Main {
         maze[startRow][startCol] = PATH;
         maze[endRow][endCol] = PATH;
 
-        
+
         boolean[][] visited = new boolean[rows][cols];
         boolean pathFound = findPath(maze, visited, startRow, startCol, endRow, endCol);
 
-      
+
         if (pathFound) {
             System.out.println("\nMaze with path:\n");
             printMazeWithPath(maze);
@@ -79,7 +123,7 @@ public class Main {
         return maze;
     }
 
-    
+
     private static void carvePath(int[][] maze, int r, int c, Random rand) {
         int[] dr = {0, 0, 2, -2}; // Directions (down/up)
         int[] dc = {2, -2, 0, 0}; // Directions (right/left)
@@ -139,7 +183,7 @@ public class Main {
         return isInBounds(r, c, maze) && maze[r][c] != WALL;
     }
 
-    
+
     private static void shuffle(int[] dr, int[] dc, Random rand) {
         for (int i = dr.length - 1; i > 0; i--) {
             int j = rand.nextInt(i + 1);
@@ -148,7 +192,7 @@ public class Main {
         }
     }
 
-    
+
     private static void printMazeWithPath(int[][] maze) {
         for (int r = 0; r < maze.length; r++) {
             for (int c = 0; c < maze[0].length; c++) {
