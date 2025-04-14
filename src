@@ -1,15 +1,64 @@
 import java.util.Random;
+import java.util.Scanner;
 
 public class Main {
     private static final int WALL = 1;
     private static final int PATH = 0;
+    private static final int VISITED = 2;
 
     public static void main(String[] args) {
-        int rows = 15; // must be odd
-        int cols = 15; // must be odd
-        int[][] maze = generateMaze(rows, cols);
+        Scanner scanner = new Scanner(System.in);
 
-        printMaze(maze);
+        // Maze size input
+        System.out.print("Enter maze rows (min 5): ");
+        int rows = scanner.nextInt();
+        System.out.print("Enter maze cols (min 5): ");
+        int cols = scanner.nextInt();
+        if (rows < 5) rows = 11;
+        if (cols < 5) cols = 11;
+
+        // Maze generation
+        int[][] maze = generateMaze(rows, cols);
+        int maxRow = maze.length - 1;
+        int maxCol = maze[0].length - 1;
+
+        // Start point input
+        System.out.print("Enter start row (default 1): ");
+        int startRow = scanner.nextInt();
+        System.out.print("Enter start col (default 0): ");
+        int startCol = scanner.nextInt();
+
+        // Exit point input
+        System.out.print("Enter exit row (default " + (rows - 2) + "): ");
+        int endRow = scanner.nextInt();
+        System.out.print("Enter exit col (default " + (cols - 1) + "): ");
+        int endCol = scanner.nextInt();
+
+        // Validate and override if needed
+        if (!isValidEntry(startRow, startCol, maze)) {
+            startRow = 1;
+            startCol = 0;
+        }
+        if (!isValidEntry(endRow, endCol, maze)) {
+            endRow = rows - 2;
+            endCol = cols - 1;
+        }
+
+        maze[startRow][startCol] = PATH;
+        maze[endRow][endCol] = PATH;
+
+        // Recursive DFS pathfinding
+        boolean[][] visited = new boolean[rows][cols];
+        boolean pathFound = findPath(maze, visited, startRow, startCol, endRow, endCol);
+
+        if (pathFound) {
+            System.out.println("\nMaze with path:\n");
+            printMazeWithPath(maze);
+        } else {
+            System.out.println("No path found from start to exit.");
+        }
+
+        scanner.close();
     }
 
     private static int[][] generateMaze(int rows, int cols) {
@@ -19,22 +68,17 @@ public class Main {
         int[][] maze = new int[rows][cols];
         Random rand = new Random();
 
-        // Fill all with walls
         for (int r = 0; r < rows; r++)
             for (int c = 0; c < cols; c++)
                 maze[r][c] = WALL;
 
         carvePath(maze, 1, 1, rand);
-
-        maze[1][0] = PATH;                 // Start
-        maze[rows - 2][cols - 1] = PATH;   // Exit
-
         return maze;
     }
- private static void carvePath(int[][] maze, int r, int c, Random rand) {
+
+    private static void carvePath(int[][] maze, int r, int c, Random rand) {
         int[] dr = {0, 0, 2, -2};
         int[] dc = {2, -2, 0, 0};
-
         shuffle(dr, dc, rand);
 
         for (int i = 0; i < 4; i++) {
@@ -49,8 +93,39 @@ public class Main {
         }
     }
 
+    private static boolean findPath(int[][] maze, boolean[][] visited, int r, int c, int endR, int endC) {
+        if (!isInBounds(r, c, maze) || maze[r][c] == WALL || visited[r][c])
+            return false;
+
+        visited[r][c] = true;
+
+        if (r == endR && c == endC) {
+            maze[r][c] = VISITED;
+            return true;
+        }
+
+        int[] dr = {-1, 1, 0, 0};
+        int[] dc = {0, 0, -1, 1};
+
+        for (int i = 0; i < 4; i++) {
+            int nr = r + dr[i];
+            int nc = c + dc[i];
+
+            if (findPath(maze, visited, nr, nc, endR, endC)) {
+                maze[r][c] = VISITED;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private static boolean isInBounds(int r, int c, int[][] maze) {
-        return r > 0 && r < maze.length - 1 && c > 0 && c < maze[0].length - 1;
+        return r >= 0 && r < maze.length && c >= 0 && c < maze[0].length;
+    }
+
+    private static boolean isValidEntry(int r, int c, int[][] maze) {
+        return isInBounds(r, c, maze) && maze[r][c] != WALL;
     }
 
     private static void shuffle(int[] dr, int[] dc, Random rand) {
@@ -61,10 +136,16 @@ public class Main {
         }
     }
 
-    private static void printMaze(int[][] maze) {
-        for (int[] row : maze) {
-            for (int cell : row) {
-                System.out.print(cell == WALL ? "#" : " ");
+    private static void printMazeWithPath(int[][] maze) {
+        for (int r = 0; r < maze.length; r++) {
+            for (int c = 0; c < maze[0].length; c++) {
+                if (maze[r][c] == WALL) {
+                    System.out.print("#");
+                } else if (maze[r][c] == VISITED) {
+                    System.out.print(".");
+                } else {
+                    System.out.print(" ");
+                }
             }
             System.out.println();
         }
