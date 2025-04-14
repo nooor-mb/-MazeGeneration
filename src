@@ -2,39 +2,38 @@ import java.util.Random;
 import java.util.Scanner;
 
 public class Main {
+   
     private static final int WALL = 1;
     private static final int PATH = 0;
-    private static final int VISITED = 2;
+    private static final int VISITED = 2; // Used to mark solution path
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        // Maze size input
+        // Ask user for maze size
         System.out.print("Enter maze rows (min 5): ");
         int rows = scanner.nextInt();
         System.out.print("Enter maze cols (min 5): ");
         int cols = scanner.nextInt();
+
+        
         if (rows < 5) rows = 11;
         if (cols < 5) cols = 11;
 
-        // Maze generation
+       
         int[][] maze = generateMaze(rows, cols);
-        int maxRow = maze.length - 1;
-        int maxCol = maze[0].length - 1;
 
-        // Start point input
+        // Ask user to enter custom start and end points
         System.out.print("Enter start row (default 1): ");
         int startRow = scanner.nextInt();
         System.out.print("Enter start col (default 0): ");
         int startCol = scanner.nextInt();
-
-        // Exit point input
         System.out.print("Enter exit row (default " + (rows - 2) + "): ");
         int endRow = scanner.nextInt();
         System.out.print("Enter exit col (default " + (cols - 1) + "): ");
         int endCol = scanner.nextInt();
 
-        // Validate and override if needed
+        // Validate points or fall back to default
         if (!isValidEntry(startRow, startCol, maze)) {
             startRow = 1;
             startCol = 0;
@@ -47,10 +46,11 @@ public class Main {
         maze[startRow][startCol] = PATH;
         maze[endRow][endCol] = PATH;
 
-        // Recursive DFS pathfinding
+        
         boolean[][] visited = new boolean[rows][cols];
         boolean pathFound = findPath(maze, visited, startRow, startCol, endRow, endCol);
 
+      
         if (pathFound) {
             System.out.println("\nMaze with path:\n");
             printMazeWithPath(maze);
@@ -61,6 +61,7 @@ public class Main {
         scanner.close();
     }
 
+    // Generate maze using recursive backtracking
     private static int[][] generateMaze(int rows, int cols) {
         rows = (rows % 2 == 0) ? rows + 1 : rows;
         cols = (cols % 2 == 0) ? cols + 1 : cols;
@@ -68,24 +69,28 @@ public class Main {
         int[][] maze = new int[rows][cols];
         Random rand = new Random();
 
+        // Fill all cells as walls initially
         for (int r = 0; r < rows; r++)
             for (int c = 0; c < cols; c++)
                 maze[r][c] = WALL;
 
+        // Start carving paths from (1,1)
         carvePath(maze, 1, 1, rand);
         return maze;
     }
 
+    
     private static void carvePath(int[][] maze, int r, int c, Random rand) {
-        int[] dr = {0, 0, 2, -2};
-        int[] dc = {2, -2, 0, 0};
-        shuffle(dr, dc, rand);
+        int[] dr = {0, 0, 2, -2}; // Directions (down/up)
+        int[] dc = {2, -2, 0, 0}; // Directions (right/left)
+        shuffle(dr, dc, rand);   // Shuffle directions for randomness
 
         for (int i = 0; i < 4; i++) {
             int nr = r + dr[i];
             int nc = c + dc[i];
 
             if (isInBounds(nr, nc, maze) && maze[nr][nc] == WALL) {
+                // Remove wall between current and neighbor
                 maze[r + dr[i] / 2][c + dc[i] / 2] = PATH;
                 maze[nr][nc] = PATH;
                 carvePath(maze, nr, nc, rand);
@@ -93,17 +98,21 @@ public class Main {
         }
     }
 
+    // Recursive DFS pathfinding from start to exit
     private static boolean findPath(int[][] maze, boolean[][] visited, int r, int c, int endR, int endC) {
+        // Base cases
         if (!isInBounds(r, c, maze) || maze[r][c] == WALL || visited[r][c])
             return false;
 
         visited[r][c] = true;
 
+        // Found exit
         if (r == endR && c == endC) {
             maze[r][c] = VISITED;
             return true;
         }
 
+        // Explore in 4 directions
         int[] dr = {-1, 1, 0, 0};
         int[] dc = {0, 0, -1, 1};
 
@@ -120,14 +129,17 @@ public class Main {
         return false;
     }
 
+    // Check if coordinates are within maze bounds
     private static boolean isInBounds(int r, int c, int[][] maze) {
         return r >= 0 && r < maze.length && c >= 0 && c < maze[0].length;
     }
 
+    // Check if a cell is a valid place to start or end
     private static boolean isValidEntry(int r, int c, int[][] maze) {
         return isInBounds(r, c, maze) && maze[r][c] != WALL;
     }
 
+    
     private static void shuffle(int[] dr, int[] dc, Random rand) {
         for (int i = dr.length - 1; i > 0; i--) {
             int j = rand.nextInt(i + 1);
@@ -136,6 +148,7 @@ public class Main {
         }
     }
 
+    
     private static void printMazeWithPath(int[][] maze) {
         for (int r = 0; r < maze.length; r++) {
             for (int c = 0; c < maze[0].length; c++) {
