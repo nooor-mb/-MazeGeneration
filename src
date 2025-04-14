@@ -31,5 +31,42 @@ public class Main {
 
         return maze;
     }
+ private static void carvePath(int[][] maze, int r, int c, Random rand) {
+        int[] dr = {0, 0, 2, -2};
+        int[] dc = {2, -2, 0, 0};
+
+        shuffle(dr, dc, rand);
+
+        for (int i = 0; i < 4; i++) {
+            int nr = r + dr[i];
+            int nc = c + dc[i];
+
+            if (isInBounds(nr, nc, maze) && maze[nr][nc] == WALL) {
+                maze[r + dr[i] / 2][c + dc[i] / 2] = PATH;
+                maze[nr][nc] = PATH;
+                carvePath(maze, nr, nc, rand);
+            }
+        }
+    }
+
+    private static boolean isInBounds(int r, int c, int[][] maze) {
+        return r > 0 && r < maze.length - 1 && c > 0 && c < maze[0].length - 1;
+    }
+
+    private static void shuffle(int[] dr, int[] dc, Random rand) {
+        for (int i = dr.length - 1; i > 0; i--) {
+            int j = rand.nextInt(i + 1);
+            int tmp = dr[i]; dr[i] = dr[j]; dr[j] = tmp;
+            tmp = dc[i]; dc[i] = dc[j]; dc[j] = tmp;
+        }
+    }
+
+    private static void printMaze(int[][] maze) {
+        for (int[] row : maze) {
+            for (int cell : row) {
+                System.out.print(cell == WALL ? "#" : " ");
+            }
+            System.out.println();
+        }
     }
 }
