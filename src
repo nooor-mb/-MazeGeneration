@@ -1,0 +1,35 @@
+import java.util.Random;
+
+public class Main {
+    private static final int WALL = 1;
+    private static final int PATH = 0;
+
+    public static void main(String[] args) {
+        int rows = 15; // must be odd
+        int cols = 15; // must be odd
+        int[][] maze = generateMaze(rows, cols);
+
+        printMaze(maze);
+    }
+
+    private static int[][] generateMaze(int rows, int cols) {
+        rows = (rows % 2 == 0) ? rows + 1 : rows;
+        cols = (cols % 2 == 0) ? cols + 1 : cols;
+
+        int[][] maze = new int[rows][cols];
+        Random rand = new Random();
+
+        // Fill all with walls
+        for (int r = 0; r < rows; r++)
+            for (int c = 0; c < cols; c++)
+                maze[r][c] = WALL;
+
+        carvePath(maze, 1, 1, rand);
+
+        maze[1][0] = PATH;                 // Start
+        maze[rows - 2][cols - 1] = PATH;   // Exit
+
+        return maze;
+    }
+    }
+}
